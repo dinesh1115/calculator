@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
 import os
 
 app = FastAPI()
@@ -63,4 +64,10 @@ async def calculate(request: CalculationRequest):
 async def get_history():
     """Retrieve calculation history from MongoDB."""
     history = await history_collection.find().to_list(100)  # Get last 100 records
-    return {"history": history}
+
+    # Convert ObjectId to string for JSON response
+    formatted_history = [
+        {**item, "_id": str(item["_id"])} for item in history
+    ]
+    
+    return {"history": formatted_history}
